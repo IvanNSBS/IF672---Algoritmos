@@ -24,6 +24,14 @@ struct P_Data
         this->proc_time = proc_time;
     }
 
+    P_Data(int mag_id, int proc_time, int eNum, int eQuePos)
+    {
+        this->mag_id = mag_id;
+        this->proc_time = proc_time;
+        e_Num = eNum;
+        e_QueuePos = eQuePos;
+    }
+
     void Print()
     {
         cout << "mag_id = " << mag_id << endl;
@@ -32,7 +40,7 @@ struct P_Data
 
     friend std::ostream& operator<<(ostream& os, const P_Data& pd)  
     {  
-        os << pd.mag_id;  
+        os << "Mag: " << pd.mag_id << " ProcTime:" << pd.proc_time << endl;  
         return os;  
     } 
 };
@@ -67,14 +75,14 @@ int main()
         cin >> num_proc;
         List<P_Data>* newList = new List<P_Data>();
 
-        for(int i = 0; i < num_proc; i++)
+        for(int j = 0; j < num_proc; j++)
         {
             int mag;
             cin >> mag;
             int times; 
             cin >> times; 
-            P_Data neo(mag, times);
-            newList->Enqueue(neo);
+            P_Data neo(mag, times, i, j);
+            newList->Enqueue(neo);    
         }
         e_list[i] = *newList; 
     }
@@ -110,7 +118,8 @@ int main()
         }
     }
 
-    for(int i = 0; i < M; i++)
+    //Getting segmentation fault(core dumped here after rearranging stacks)
+    /*for(int i = 0; i < M; i++)
     {
         for(int j = 0; j < M; j++)
         {
@@ -119,6 +128,7 @@ int main()
             List<P_Data>* S0 = new List<P_Data>();
             while(temp != nullptr)
             {
+                cout << m_list[j].proccesses->last->key;
                 if(i == temp->key.mag_id)
                 {
                     SY->Stack_push(m_list[j].proccesses->last->key);
@@ -136,28 +146,33 @@ int main()
             m_list[i].proccesses->last->next = SY->head;
             m_list[i].proccesses->last = SY->last;
         }
-    }
+    }*/
 
+    //no finishing loop correctly, both inner and out loop
     nullCount = 0;
     while(nullCount < M)
-    for(int i = 0; i < M; i++)
     {
-        int fullTime = m_list[i].work_time;
-        while(m_list[i].work_time > 0)
+        for(int i = 0; i < M; i++)
         {
-            int proctime = m_list[i].proccesses->last->key.proc_time;
-            m_list[i].proccesses->last->key.proc_time = proctime - m_list[i].work_time;
-            m_list[i].work_time = m_list[i].work_time - proctime;
-            if(m_list[i].proccesses->last->key.proc_time <= 0)
+            int fullTime = m_list[i].work_time;
+            while(m_list[i].work_time > 0)
             {
-                //imprimir os xesqdl aqui
-                cout << i << " " << empresaNum << " " << empresaQueuePos << endl;
-                m_list[i].proccesses->Stack_pop();
-                if(m_list[i].proccesses->head == nullptr)
-                    nullCount++;
+                int proctime = m_list[i].proccesses->last->key.proc_time;
+                m_list[i].proccesses->last->key.proc_time = proctime - m_list[i].work_time;
+                cout << "work Time is:" << m_list[i].work_time << endl;
+                m_list[i].work_time = m_list[i].work_time - abs(proctime);
+                if(m_list[i].proccesses->last->key.proc_time <= 0)
+                {
+                    P_Data ref = m_list[i].proccesses->last->key;
+                    cout << i << " " << ref.e_Num << " " << ref.e_QueuePos << endl;
+                    m_list[i].proccesses->Stack_pop();
+                    if(m_list[i].proccesses->head == nullptr)
+                        nullCount++;
+                }
+                cout << "New Worktime is: " << m_list[i].work_time << endl;
             }
+            m_list[i].work_time = fullTime;
         }
-        m_list[i].work_time = fullTime;
     }
 
     return 0;
