@@ -32,15 +32,9 @@ struct P_Data
         e_QueuePos = eQuePos;
     }
 
-    void Print()
-    {
-        cout << "mag_id = " << mag_id << endl;
-        cout << "proc_time = " << proc_time << endl;
-    }
-
     friend std::ostream& operator<<(ostream& os, const P_Data& pd)  
     {  
-        os << "Mag: " << pd.mag_id << " ProcTime:" << pd.proc_time << endl;  
+        os << "Mag: " << pd.mag_id << " ProcTime:" << pd.proc_time << " Empresa num: " << pd.e_Num << " E_P_QuePos: " << pd.e_QueuePos << endl;  
         return os;  
     } 
 };
@@ -61,14 +55,18 @@ struct M_Data
     }
 };
 
+
+
+
+
 int main()
 {
     int E;
     std::cin >> E;
     //lista com as empresas e seus processos
     List<P_Data>* e_list = new List<P_Data>[E];
-    //List<List<P_Data>>* test = new List<List<P_Data>>;
 
+    //cria os processos para as empresas
     for(int i = 0; i < E; i++)
     {
         int num_proc;
@@ -82,27 +80,31 @@ int main()
             int times; 
             cin >> times; 
             P_Data neo(mag, times, i, j);
-            newList->Enqueue(neo);    
+            newList->Stack_push(neo);    
         }
         e_list[i] = *newList; 
+        //cout<< "Process "<< i << " list: " << endl; e_list[i].PrintTree();
     }
+
 
     int M;
     std::cin >> M;
     //lista com as os magisterios e seus dados
     M_Data* m_list = new M_Data[M];
 
+    //cria os magisterios
     for(int i = 0; i < M; i++)
     {
         int hours;
         cin >> hours;
         M_Data mag_data(hours);
-        m_list[0] = mag_data;
+        m_list[i] = mag_data;
     }
 
 
+    //passa os processos das empresas para os magisterios
     int nullCount = 0;
-    while (nullCount <= E-1)
+    while (nullCount <= E)
     {
         for(int i = 0, j = 0; i < E; i++, j++)
         {
@@ -118,62 +120,80 @@ int main()
         }
     }
 
-    //Getting segmentation fault(core dumped here after rearranging stacks)
-    /*for(int i = 0; i < M; i++)
+        for(int i = 0; i < M; i++)
     {
-        for(int j = 0; j < M; j++)
+        cout << "Mag " << i << " Processes:"<< endl; m_list[i].proccesses->PrintTree();
+    }
+
+    //re-ordena os processos baseados nas prioridades
+    //Getting segmentation fault(core dumped) here after rearranging stacks
+    for(int y = 0; y < M; y++)
+    {
+        for(int x = 0; x < M; x++)
         {
-            Node<P_Data>* temp = m_list[j].proccesses->head;
-            List<P_Data>* SY = new List<P_Data>();
-            List<P_Data>* S0 = new List<P_Data>();
-            while(temp != nullptr)
+            if(x != y)
             {
-                cout << m_list[j].proccesses->last->key;
-                if(i == temp->key.mag_id)
+                Node<P_Data>* temp = m_list[x].proccesses->last;
+                List<P_Data>* SY = new List<P_Data>();
+                List<P_Data>* S0 = new List<P_Data>();
+                while(temp != nullptr)
                 {
-                    SY->Stack_push(m_list[j].proccesses->last->key);
-                    m_list[j].proccesses->Stack_pop();
+                    //cout << m_list[j].proccesses->last->key;
+                    if(y == temp->key.mag_id)
+                    {
+                        SY->Stack_push(m_list[x].proccesses->last->key);
+                        m_list[x].proccesses->Stack_pop();
+                    }
+                    else
+                    {
+                        S0->Stack_push(m_list[x].proccesses->last->key);
+                        m_list[x].proccesses->Stack_pop();
+                    }
+                    temp = temp->prev;
                 }
-                else
+                m_list[x].proccesses = S0;
+                
+                if(SY->head != nullptr)
                 {
-                    S0->Stack_push(m_list[j].proccesses->last->key);
-                    m_list[j].proccesses->Stack_pop();
+                    SY->head->prev = m_list[y].proccesses->last;
+                    m_list[y].proccesses->last->next = SY->head;
+                    m_list[y].proccesses->last = SY->last;
                 }
-
-                temp = temp->next;
             }
-            m_list[j].proccesses = S0;
-            m_list[i].proccesses->last->next = SY->head;
-            m_list[i].proccesses->last = SY->last;
         }
-    }*/
+    }
 
-    //no finishing loop correctly, both inner and out loop
+    for(int i = 0; i < M; i++)
+    {
+        cout << "Mag " << i << " Processes:"<< endl; m_list[i].proccesses->PrintTree();
+    }
+
+    //resolve os processos
     nullCount = 0;
     while(nullCount < M)
     {
         for(int i = 0; i < M; i++)
         {
             int fullTime = m_list[i].work_time;
-            while(m_list[i].work_time > 0)
+            if(m_list[i].work_time > 0 && m_list[i].proccesses->head != nullptr)
             {
-                int proctime = m_list[i].proccesses->last->key.proc_time;
-                m_list[i].proccesses->last->key.proc_time = proctime - m_list[i].work_time;
-                cout << "work Time is:" << m_list[i].work_time << endl;
-                m_list[i].work_time = m_list[i].work_time - abs(proctime);
-                if(m_list[i].proccesses->last->key.proc_time <= 0)
+                while(m_list[i].work_time > 0 && m_list[i].proccesses->head != nullptr)
                 {
-                    P_Data ref = m_list[i].proccesses->last->key;
-                    cout << i << " " << ref.e_Num << " " << ref.e_QueuePos << endl;
-                    m_list[i].proccesses->Stack_pop();
-                    if(m_list[i].proccesses->head == nullptr)
-                        nullCount++;
+                    int proctime = m_list[i].proccesses->last->key.proc_time;
+                    m_list[i].proccesses->last->key.proc_time -= m_list[i].work_time;
+                    m_list[i].work_time -= proctime;
+                    if(m_list[i].proccesses->last->key.proc_time <= 0)
+                    {
+                        P_Data ref = m_list[i].proccesses->last->key;
+                        cout << i << " " << ref.e_Num << " " << ref.e_QueuePos << endl;
+                        m_list[i].proccesses->Stack_pop();
+                        if(m_list[i].proccesses->head == nullptr)
+                            nullCount++;
+                    }
                 }
-                cout << "New Worktime is: " << m_list[i].work_time << endl;
             }
             m_list[i].work_time = fullTime;
         }
     }
-
     return 0;
 }

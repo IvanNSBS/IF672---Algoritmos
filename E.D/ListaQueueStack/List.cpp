@@ -62,12 +62,23 @@ void List<T>::Enqueue(T key)
     if(head == nullptr)
     {
         head = new Node<T>(key);
+        head->next = nullptr;
         last = head;
+        last->prev = nullptr;
+        return;
+    }
+    if(head->next == nullptr)
+    {
+        Node<T>* newhead = new Node<T>(key);
+        Node<T>* temp = head;
+        head = newhead;
+        head->next = temp;
         last->prev = head;
         return;
     }
     Node<T>* newhead = new Node<T>(key);
     Node<T>* temp = head;
+    temp->prev = newhead;
     head = newhead;
     head->next = temp;
 }
@@ -103,17 +114,20 @@ void List<T>::Queue_pop()
     head = temp;
     if(temp != nullptr)
         head->next = temp->next;
-    //else
-     //   cout << "Lista Vazia" << endl;
-    //while(true){}
 }
 
 template <class T>
 void List<T>::Stack_pop()
 {
+    if(last == head)
+    {
+        last = head = nullptr;
+        return;
+    }
     if(last->prev == head)
     {
-        last == nullptr;
+        last = head;
+        last->prev = nullptr;
         return;  
     }
     Node<T>* temp = last->prev;
