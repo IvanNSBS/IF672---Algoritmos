@@ -114,6 +114,8 @@ void List<T>::Queue_pop()
     head = temp;
     if(temp != nullptr)
         head->next = temp->next;
+    else
+        head = nullptr;
 }
 
 template <class T>

@@ -1,8 +1,168 @@
-#include "List.cpp"
 #include <vector>
 #include <string>
 #include <iostream>
 #include <sstream>
+
+
+#include <iostream>
+using namespace std;
+
+template <class T>
+class Node {
+public:
+    T key;
+    Node* next;
+    Node* prev;
+    Node(T key)
+    {
+        this->key = key;
+        this->next = nullptr;
+    }
+    Node()
+    {
+        
+    }
+};
+
+template <typename T>
+class List{
+public:
+    Node<T>* head;
+    Node<T>* last;
+
+private:
+    void Stack_push(Node<T>* node, T key);
+    void PrintTree(Node<T>* node);
+
+public:
+    void Stack_push(T key);
+    void Enqueue(T key);
+    void Stack_pop();
+    void Queue_pop();
+    void PrintTree();
+
+
+    //List(T key);
+    //List();
+};
+
+/*template <class T>
+List<T>::List(T key)
+{
+    head = new Node<T>(key);
+    last = head;
+    last->prev = head;
+}
+
+template <class T>
+List<T>::List()
+{
+    head = nullptr;
+    last = head;
+    last->prev = head;
+}*/
+
+template <class T>
+void List<T>::Enqueue(T key)
+{
+    if(head == nullptr)
+    {
+        head = new Node<T>(key);
+        head->next = nullptr;
+        last = head;
+        last->prev = nullptr;
+        return;
+    }
+    if(head->next == nullptr)
+    {
+        Node<T>* newhead = new Node<T>(key);
+        Node<T>* temp = head;
+        head = newhead;
+        head->next = temp;
+        last->prev = head;
+        return;
+    }
+    Node<T>* newhead = new Node<T>(key);
+    Node<T>* temp = head;
+    temp->prev = newhead;
+    head = newhead;
+    head->next = temp;
+}
+
+template <class T>
+void List<T>::Stack_push(T key)
+{
+    Stack_push(last, key);
+}
+
+template <class T>
+void List<T>::Stack_push(Node<T> *node, T key)
+{
+    if(head == nullptr)
+    {
+        head = new Node<T>(key);
+        last = head;
+        last->prev = head;
+        return;
+    }
+    Node<T>* temp = new Node<T>(key);
+    Node<T>* prev = last;
+    last->next = temp;
+    last = last->next;
+    last->prev = prev;
+}
+
+template <class T>
+void List<T>::Queue_pop()
+{
+    Node<T>* temp = head->next;
+    delete head;
+    head = temp;
+    if(temp != nullptr)
+        head->next = temp->next;
+    else
+        head = nullptr;
+}
+
+template <class T>
+void List<T>::Stack_pop()
+{
+    if(last == head)
+    {
+        last = head = nullptr;
+        return;
+    }
+    if(last->prev == head)
+    {
+        last = head;
+        last->prev = nullptr;
+        return;  
+    }
+    Node<T>* temp = last->prev;
+    delete last;
+    last = temp;
+    last->prev = temp->prev;
+    last->next = nullptr;
+}
+
+template <class T>
+void List<T>::PrintTree()
+{
+    PrintTree(head);
+}
+
+template <class T>
+void List<T>::PrintTree(Node<T> *node)
+{
+    if(node != nullptr)
+    {
+        cout << node->key << endl;
+        PrintTree(node->next);
+    }
+    else
+        return;
+}
+
 
 //Process Data
 struct P_Data
@@ -56,9 +216,6 @@ struct M_Data
 };
 
 
-
-
-
 int main()
 {
     int E;
@@ -72,7 +229,6 @@ int main()
         int num_proc;
         cin >> num_proc;
         List<P_Data>* newList = new List<P_Data>();
-
         for(int j = 0; j < num_proc; j++)
         {
             int mag;
@@ -83,7 +239,6 @@ int main()
             newList->Stack_push(neo);    
         }
         e_list[i] = *newList; 
-        //cout<< "Process "<< i << " list: " << endl; e_list[i].PrintTree();
     }
 
 
@@ -103,30 +258,37 @@ int main()
 
 
     //passa os processos das empresas para os magisterios
+    int* emptyQueues = new int[E];
+    for(int i = 0; i < E; i++)
+        emptyQueues[i] = 0;
+
+
+    int sum = 0;
     int nullCount = 0;
-    while (nullCount <= E)
+    while (nullCount < E)
     {
         for(int i = 0, j = 0; i < E; i++, j++)
         {
             if(j >= M)
                 j = 0;
-            if(e_list[i].head == nullptr)
+            if(e_list[i].head == nullptr && emptyQueues[i] == 0)
+            {
                 nullCount++;
+                emptyQueues[i]++;
+            }
             else
             {
-                m_list[j].proccesses->Stack_push(e_list[i].head->key);
-                e_list[i].Queue_pop();
+                if(e_list[i].head != nullptr)
+                {
+                    m_list[j].proccesses->Stack_push(e_list[i].head->key);
+                    e_list[i].Queue_pop();
+                    sum++;
+                }
             }
         }
     }
 
-        for(int i = 0; i < M; i++)
-    {
-        cout << "Mag " << i << " Processes:"<< endl; m_list[i].proccesses->PrintTree();
-    }
-
     //re-ordena os processos baseados nas prioridades
-    //Getting segmentation fault(core dumped) here after rearranging stacks
     for(int y = 0; y < M; y++)
     {
         for(int x = 0; x < M; x++)
@@ -152,7 +314,6 @@ int main()
                     temp = temp->prev;
                 }
                 m_list[x].proccesses = S0;
-                
                 if(SY->head != nullptr)
                 {
                     SY->head->prev = m_list[y].proccesses->last;
@@ -163,10 +324,10 @@ int main()
         }
     }
 
-    for(int i = 0; i < M; i++)
-    {
-        cout << "Mag " << i << " Processes:"<< endl; m_list[i].proccesses->PrintTree();
-    }
+    //for(int i = 0; i < M; i++)
+    //{
+     //   cout << "Mag " << i << " Processes:"<< endl; m_list[i].proccesses->PrintTree();
+    //}
 
     //resolve os processos
     nullCount = 0;
@@ -179,9 +340,13 @@ int main()
             {
                 while(m_list[i].work_time > 0 && m_list[i].proccesses->head != nullptr)
                 {
+                    //cout << "Remaining Worktime for Magister "<< i << ": " << m_list[i].work_time << endl;
                     int proctime = m_list[i].proccesses->last->key.proc_time;
+                    //cout << "Remaining Process worktime: " << proctime << endl;
                     m_list[i].proccesses->last->key.proc_time -= m_list[i].work_time;
                     m_list[i].work_time -= proctime;
+                    //cout << "Worktime after Process for Magister "<< i << ": " << m_list[i].work_time << endl;
+                    //cout << "Process Remaining Time after work: " << m_list[i].proccesses->last->key.proc_time << endl; 
                     if(m_list[i].proccesses->last->key.proc_time <= 0)
                     {
                         P_Data ref = m_list[i].proccesses->last->key;
