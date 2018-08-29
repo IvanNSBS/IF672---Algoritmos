@@ -1,9 +1,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <sstream>
-
-
 #include <iostream>
 using namespace std;
 
@@ -18,10 +15,7 @@ public:
         this->key = key;
         this->next = nullptr;
     }
-    Node()
-    {
-        
-    }
+    Node(){}
 };
 
 template <typename T>
@@ -73,20 +67,13 @@ void List<T>::Enqueue(T key)
         last->prev = nullptr;
         return;
     }
-    if(head->next == nullptr)
-    {
-        Node<T>* newhead = new Node<T>(key);
-        Node<T>* temp = head;
-        head = newhead;
-        head->next = temp;
-        last->prev = head;
-        return;
-    }
     Node<T>* newhead = new Node<T>(key);
     Node<T>* temp = head;
     temp->prev = newhead;
     head = newhead;
     head->next = temp;
+    if(head->next == nullptr)
+        last->prev = head;
 }
 
 template <class T>
@@ -178,12 +165,6 @@ struct P_Data
         proc_time = 0;
     }
 
-    P_Data(int mag_id, int proc_time)
-    {
-        this->mag_id = mag_id;
-        this->proc_time = proc_time;
-    }
-
     P_Data(int mag_id, int proc_time, int eNum, int eQuePos)
     {
         this->mag_id = mag_id;
@@ -203,15 +184,15 @@ struct M_Data
 {
     int work_time;
     List<P_Data>* proccesses = new List<P_Data>();
-
+    int fullWorkTime;
     M_Data()
     {
-        work_time = 24;
+        fullWorkTime = work_time = 24;
     }
 
     M_Data(int hours)
     {
-        work_time = hours;
+        fullWorkTime = work_time = hours;
     }
 };
 
@@ -256,97 +237,74 @@ int main()
         m_list[i] = mag_data;
     }
 
-
-    //passa os processos das empresas para os magisterios
-    int* emptyQueues = new int[E];
-    for(int i = 0; i < E; i++)
-        emptyQueues[i] = 0;
-
-
-    int sum = 0;
     int nullCount = 0;
+    int j = 0;
     while (nullCount < E)
     {
-        for(int i = 0, j = 0; i < E; i++, j++)
+        //int i = 0;
+        for(int i = 0; i < E; i++)//i = empresa, j = mag
         {
-            if(j >= M)
-                j = 0;
-            if(e_list[i].head == nullptr && emptyQueues[i] == 0)
-            {
-                nullCount++;
-                emptyQueues[i]++;
-            }
-            else
-            {
-                if(e_list[i].head != nullptr)
-                {
-                    m_list[j].proccesses->Stack_push(e_list[i].head->key);
-                    e_list[i].Queue_pop();
-                    sum++;
-                }
-            }
+            if(e_list[i].head != nullptr)
+            {   
+                m_list[j].proccesses->Stack_push(e_list[i].head->key);
+                e_list[i].Queue_pop();
+
+                if(e_list[i].head == nullptr)
+                    nullCount++;
+                j++;
+                if(j == M)
+                    j = 0;
+            }   
         }
     }
 
     //re-ordena os processos baseados nas prioridades
-    for(int y = 0; y < M; y++)
+    for(int x = 0; x < M; x++)
     {
-        for(int x = 0; x < M; x++)
+        for(int y = 0; y < M; y++)
         {
-            if(x != y)
+            if(x != y)//garante que o assistente nao ta procurando a pilha do seu magisterio
             {
-                Node<P_Data>* temp = m_list[x].proccesses->last;
-                List<P_Data>* SY = new List<P_Data>();
-                List<P_Data>* S0 = new List<P_Data>();
+                Node<P_Data>* temp = m_list[x].proccesses->last;//referencia à pilha que o assistente busca
+                List<P_Data>* SY = new List<P_Data>();//pilha de processos do magisterio Y
+                List<P_Data>* S0 = new List<P_Data>();//pilha resultante do magisterio X
                 while(temp != nullptr)
                 {
-                    //cout << m_list[j].proccesses->last->key;
-                    if(y == temp->key.mag_id)
+                    if(y == temp->key.mag_id)//se a pilha for do magisterio Y
                     {
-                        SY->Stack_push(m_list[x].proccesses->last->key);
-                        m_list[x].proccesses->Stack_pop();
+                        SY->Stack_push(m_list[x].proccesses->last->key);//empilha em SY
+                        m_list[x].proccesses->Stack_pop();//remove da pilha 
                     }
-                    else
+                    else//se nao
                     {
-                        S0->Stack_push(m_list[x].proccesses->last->key);
-                        m_list[x].proccesses->Stack_pop();
+                        S0->Stack_push(m_list[x].proccesses->last->key);//empilha em s0
+                        m_list[x].proccesses->Stack_pop();//remove da pilha
                     }
-                    temp = temp->prev;
+                    temp = temp->prev;//vai para o 'proximo'
                 }
-                m_list[x].proccesses = S0;
-                if(SY->head != nullptr)
+                m_list[x].proccesses = S0;//processos do magisterio X agora é a pilha resultante
+                if(SY->head != nullptr)//garante que nao estou pondo uma pilha vazia em cima da outra, perdendo referencias
                 {
-                    SY->head->prev = m_list[y].proccesses->last;
-                    m_list[y].proccesses->last->next = SY->head;
-                    m_list[y].proccesses->last = SY->last;
+                    SY->head->prev = m_list[y].proccesses->last; // estou usando uma lista duplamente encadeada para remoçao em tempo constante
+                                                                 // garanto aqui que em nenhum ponto vou perder o nó anterior
+                    m_list[y].proccesses->last->next = SY->head; // conecto o ultimo elemento da pilha com a cabeça da pilha nova
+                    m_list[y].proccesses->last = SY->last; // atualizo o valor do ultimo elemento da pilha
                 }
             }
         }
     }
 
-    //for(int i = 0; i < M; i++)
-    //{
-     //   cout << "Mag " << i << " Processes:"<< endl; m_list[i].proccesses->PrintTree();
-    //}
-
-    //resolve os processos
     nullCount = 0;
     while(nullCount < M)
     {
-        for(int i = 0; i < M; i++)
+        for(int dayTime = 0; dayTime < 24; dayTime++)
         {
-            int fullTime = m_list[i].work_time;
-            if(m_list[i].work_time > 0 && m_list[i].proccesses->head != nullptr)
+            for(int i = 0; i < M; i++)
             {
-                while(m_list[i].work_time > 0 && m_list[i].proccesses->head != nullptr)
+                if(m_list[i].work_time > 0 && m_list[i].proccesses->head != nullptr)
                 {
-                    //cout << "Remaining Worktime for Magister "<< i << ": " << m_list[i].work_time << endl;
-                    int proctime = m_list[i].proccesses->last->key.proc_time;
-                    //cout << "Remaining Process worktime: " << proctime << endl;
-                    m_list[i].proccesses->last->key.proc_time -= m_list[i].work_time;
-                    m_list[i].work_time -= proctime;
-                    //cout << "Worktime after Process for Magister "<< i << ": " << m_list[i].work_time << endl;
-                    //cout << "Process Remaining Time after work: " << m_list[i].proccesses->last->key.proc_time << endl; 
+                    m_list[i].proccesses->last->key.proc_time--;
+                    m_list[i].work_time--;
                     if(m_list[i].proccesses->last->key.proc_time <= 0)
                     {
                         P_Data ref = m_list[i].proccesses->last->key;
@@ -357,8 +315,9 @@ int main()
                     }
                 }
             }
-            m_list[i].work_time = fullTime;
         }
+        for(int i = 0; i < M; i++)
+            m_list[i].work_time = m_list[i].fullWorkTime;
     }
     return 0;
 }
