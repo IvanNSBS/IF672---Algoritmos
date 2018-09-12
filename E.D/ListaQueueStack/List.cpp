@@ -12,10 +12,7 @@ public:
         this->key = key;
         this->next = nullptr;
     }
-    Node()
-    {
-        
-    }
+    Node(){}
 };
 
 template <typename T>
@@ -23,10 +20,12 @@ class List{
 public:
     Node<T>* head;
     Node<T>* last;
+    int size;
 
 private:
     void Stack_push(Node<T>* node, T key);
     void PrintTree(Node<T>* node);
+    //void Search(Node<T>* node, T key);
 
 public:
     void Stack_push(T key);
@@ -59,6 +58,7 @@ List<T>::List()
 template <class T>
 void List<T>::Enqueue(T key)
 {
+    size++;
     if(head == nullptr)
     {
         head = new Node<T>(key);
@@ -67,20 +67,13 @@ void List<T>::Enqueue(T key)
         last->prev = nullptr;
         return;
     }
-    if(head->next == nullptr)
-    {
-        Node<T>* newhead = new Node<T>(key);
-        Node<T>* temp = head;
-        head = newhead;
-        head->next = temp;
-        last->prev = head;
-        return;
-    }
     Node<T>* newhead = new Node<T>(key);
     Node<T>* temp = head;
     temp->prev = newhead;
     head = newhead;
     head->next = temp;
+    if(head->next == nullptr)
+        last->prev = head;
 }
 
 template <class T>
@@ -92,6 +85,7 @@ void List<T>::Stack_push(T key)
 template <class T>
 void List<T>::Stack_push(Node<T> *node, T key)
 {
+    size++;
     if(head == nullptr)
     {
         head = new Node<T>(key);

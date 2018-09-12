@@ -1,3 +1,4 @@
+#include "../ListaQueueStack/List.cpp"
 using namespace std;
 
 template <typename K, typename V>
@@ -15,32 +16,44 @@ public:
 };
 
 template <typename K, typename V>
-class HashTable
+class CHashTable
 {
 public: 
-    HashNode<K,V> **arr;
+
+    List<HashNode<K,V>> *arr;
     int capacity;
     int currSize;
 
     virtual int HashFunction(K key);
     void Insert(K key, V value);
-    V Delete(int key);
     V Search(int key);
 
-    HashTable(int capacity)
+    CHashTable(int capacity)
     {
-        this.capacity = capacity;
+        this->capacity = capacity;
+        arr = new List<HashNode<K,V>>[capacity];
         currSize = 0;
-
-        for(int i = 0; i < capacity; i++)
-            arr[i] = nullptr;
     }
-}
+};
 
 template <typename K, typename V>
-V HashTable::Search(int key)
+void CHashTable<K, V>::Insert(K key, V value)
 {
+    HashNode<K,V> *temp = new HashNode<K,V>(key, value);
+    // Apply hash function to find index for given key
     int hashIndex = hashCode(key);
+    if(arr[hashIndex] == nullptr)
+    {
+        arr[hashIndex] = *temp;
+        return;
+    }
+    arr[hashIndex].Enqueue(temp);    
+}
+
+/*template <typename K, typename V>
+V CHashTable<K, V>::Search(int key)
+{
+    int hashIndex = HashFunction(K);
     //finding the node with given key   
     while(arr[hashIndex] != nullptr)
     {
@@ -52,24 +65,5 @@ V HashTable::Search(int key)
     }
     //If not found return null
     return nullptr;
-}
-
-template <typename K, typename V>
-V HashTable::Insert(K key, V value)
-{
-    HashNode<K,V> *temp = new HashNode<K,V>(key, value);
-    // Apply hash function to find index for given key
-    int hashIndex = hashCode(key);
-      
-    //find next free space 
-    while(arr[hashIndex] != nullptr && arr[hashIndex]->key != key && arr[hashIndex]->key != -1)
-    {
-        hashIndex++;
-        hashIndex %= capacity;
-    }    
-    //if new node to be inserted increase the current size
-    if(arr[hashIndex] == nullptr || arr[hashIndex]->key == -1)
-        size++;
-    arr[hashIndex] = temp;
-}
+}*/
 
