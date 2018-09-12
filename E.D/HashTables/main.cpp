@@ -9,9 +9,16 @@ struct HashNode
 {
     string value;
     int key;
+    int pos;
 
     HashNode(const int &k, const string &val) : key(k), value(val) {}
-    HashNode(){value = ""; key = -1;}
+    HashNode(const int &k, const string &val, const int &p) : key(k), value(val), pos(p) {}
+    HashNode(){value = ""; key = -1; pos = -1;}
+
+    friend bool operator==(const HashNode& lhs, const HashNode& rhs)
+    {
+        return lhs.value.compare(rhs.value) == 0;
+    }
 };
 
 class HashTable
@@ -25,7 +32,7 @@ public:
     void Insert(int key, string value);
     void Insert(HashNode newNode);
     HashNode BSearchNode(int key);
-    int FindProcPos(string val);
+    HashNode FindProc(string val);
     //int Search(int key);
 
     HashTable(int capacity)
@@ -80,15 +87,17 @@ void HashTable::Insert(HashNode newNode)
     int index = HashFunction(newNode.value);
     if(index < capacity)
     {
+        //newNode.pos = arr[index].size;
         arr[index].Enqueue(newNode);
+        arr[index].last->key.pos = arr[index].size;
     }
 }
 
-int HashTable::FindProcPos(string val)
+HashNode HashTable::FindProc(string val)
 {
     int index = HashFunction(val);
-    Node *temp = arr[val].head;
-
+    HashNode temp(0, val);
+    return arr[index].Search(temp);
 }
 
 
@@ -160,6 +169,12 @@ int main()
         cout << i << ": " << newOffice->arr[i].size << endl;
     }
 
+    //for(int i = 0; i < Y; i++)
+    //{
+    //    HashNode temp = newOffice->FindProc(toAnalyse[i]);
+    //    if(temp.key != -1)
+    //        cout << i << ": " << temp.pos << endl;
+    //}
 
 
     return 0;

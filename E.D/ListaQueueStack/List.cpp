@@ -25,7 +25,7 @@ public:
 private:
     void Stack_push(Node<T>* node, T key);
     void PrintTree(Node<T>* node);
-    //void Search(Node<T>* node, T key);
+    T Search(Node<T>* node, T key);
 
 public:
     void Stack_push(T key);
@@ -33,6 +33,7 @@ public:
     void Stack_pop();
     void Queue_pop();
     void PrintTree();
+    T Search(T Key);
 
 
     //List(T key);
@@ -121,7 +122,9 @@ void List<T>::Stack_pop()
         return;
     }
     if(last->prev == head)
-    {
+    {{
+    PrintTree(head);
+}
         last = head;
         last->prev = nullptr;
         return;  
@@ -131,6 +134,31 @@ void List<T>::Stack_pop()
     last = temp;
     last->prev = temp->prev;
     last->next = nullptr;
+}
+
+template <class T>
+T List<T>::Search(Node<T> *node, T key)
+{
+    if(node->next == nullptr)
+    {
+        if(node->key == key)
+            return node->key;
+        else
+            return T();
+    }
+    else
+    {
+        if(node->key == key)
+            return node->key;
+        else
+            return Search(node->next, key);
+    }
+}
+
+template <class T>
+T List<T>::Search(T key)
+{
+    Search(head, key);
 }
 
 template <class T>
