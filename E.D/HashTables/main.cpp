@@ -11,7 +11,7 @@ struct HashNode
     int key;
     int pos;
 
-    HashNode(const int &k, const string &val) : key(k), value(val) {}
+    HashNode(const int &k, const string &val) : key(k), value(val), pos(-1) {}
     HashNode(const int &k, const string &val, const int &p) : key(k), value(val), pos(p) {}
     HashNode(){value = ""; key = -1; pos = -1;}
 
@@ -19,6 +19,12 @@ struct HashNode
     {
         return lhs.value.compare(rhs.value) == 0;
     }
+
+    friend std::ostream& operator<<(ostream& os, const HashNode& hd)  
+    {  
+        os << "Value: " << hd.value << "  ::  Pos: " << hd.pos;  
+        return os;  
+    } 
 };
 
 class HashTable
@@ -88,8 +94,9 @@ void HashTable::Insert(HashNode newNode)
     if(index < capacity)
     {
         //newNode.pos = arr[index].size;
+        newNode.pos = arr[index].size +1 ;
         arr[index].Enqueue(newNode);
-        arr[index].last->key.pos = arr[index].size;
+        //arr[index].last->key.pos = arr[index].size;
     }
 }
 
@@ -169,13 +176,63 @@ int main()
         cout << i << ": " << newOffice->arr[i].size << endl;
     }
 
-    //for(int i = 0; i < Y; i++)
+    for(int j = 0; j < M; j++)
+    {
+        for(int i = 0; i < Y; i++)
+        {
+            HashNode temp(0, toAnalyse[i]);
+            cout << "temp is:" << toAnalyse[i] << endl;
+            string msg = to_string(j) + ": ";
+            newOffice->arr[i].SelectivePrint(temp, msg);
+        }
+    }
+    //for(int i = 0; i < Y;i++)
     //{
-    //    HashNode temp = newOffice->FindProc(toAnalyse[i]);
-    //    if(temp.key != -1)
-    //        cout << i << ": " << temp.pos << endl;
+    //    newOffice->arr[i].PrintTree();
     //}
 
 
     return 0;
 }
+
+/*
+20
+nmIvRceRaN 6
+iZ1PEB5yhR 15
+A6IlLkrP45 24
+LUffVqJZUz 34
+URcgeaMQRw 40
+MUO679xYPI 44
+zdk21sGTIS 54
+ALKkgL3JIx 55
+10ejR7i8Gy 64
+nBuELnKGKd 68
+YtWuHl5eDt 73
+htyVEymuNz 82
+lGDQoa0IkF 91
+rtPEi9cNNi 99
+X40kUY2lZj 104
+DRw3n9xZEA 114
+zN4lAW7eSG 119
+bzKiHXseEG 122
+PoutMvdy6e 129
+4Woumssa6Y 136
+4
+10
+40
+82
+104
+55
+24
+114
+122
+6
+15
+129
+5
+ALKkgL3JIx
+nmIvRceRaN
+iZ1PEB5yhR
+bzKiHXseEG
+ALKkgL3JIx
+*/

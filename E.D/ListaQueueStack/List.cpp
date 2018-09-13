@@ -25,6 +25,7 @@ public:
 private:
     void Stack_push(Node<T>* node, T key);
     void PrintTree(Node<T>* node);
+    void SelectivePrint(Node<T>* node, T key, string msg);
     T Search(Node<T>* node, T key);
 
 public:
@@ -33,6 +34,7 @@ public:
     void Stack_pop();
     void Queue_pop();
     void PrintTree();
+    void SelectivePrint(T key, string msg);
     T Search(T Key);
 
 
@@ -174,6 +176,26 @@ void List<T>::PrintTree(Node<T> *node)
     {
         cout << node->key << endl;
         PrintTree(node->next);
+    }
+    else
+        return;
+}
+
+template <class T>
+void List<T>::SelectivePrint(T key, string msg)
+{
+    SelectivePrint(head, key, msg);
+}
+
+template <class T>
+void List<T>::SelectivePrint(Node<T> *node, T key, string msg)
+{
+    if(node != nullptr)
+    {
+        if(node->key == key)
+            cout << msg << node->key << endl;
+
+        SelectivePrint(node->next, key, msg);
     }
     else
         return;

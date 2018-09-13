@@ -175,7 +175,7 @@ struct P_Data
 
     friend std::ostream& operator<<(ostream& os, const P_Data& pd)  
     {  
-        os << "Mag: " << pd.mag_id << " ProcTime:" << pd.proc_time << " Empresa num: " << pd.e_Num << " E_P_QuePos: " << pd.e_QueuePos << endl;  
+        os << pd.e_QueuePos << endl;  
         return os;  
     } 
 };
