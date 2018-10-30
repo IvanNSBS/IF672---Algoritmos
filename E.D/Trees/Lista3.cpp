@@ -8,7 +8,7 @@ struct Data
     int M;
     int l, r, RMQ;
     //int 
-    Data(): l(0), r(0), M((l+r)/2){}
+    Data(): l(0), r(0), M(0), RMQ(9999999){}
     Data(const int &vl, const int &vr) : l(vl), r(vr), M((vl+vr)/2){}
     Data(const int &vl, const int &vr, const int &vRMQ) : l(vl), r(vr), M((vl+vr)/2), RMQ(vRMQ){}
 
@@ -77,60 +77,18 @@ class BTree
 public: 
     Node<T>* root;
 private:
-    void Add(Node<T> *node, T key);
-    Node<T>* Find(Node<T> *node, T key);
     void CreateST(Node<Data>* node, int l, int r, int arr[] );
     int FindRMQ(Node<Data>* data, int l, int r);
+    void UpdateTree(Node<Data>* node, int a, int arr[]);
+    void PRT(Node<Data>* node, int l, int r);
 
-    void DeleteTree(Node<T>* node);
-
-    void PostOrder(Node<T> *node);
-    void InOrder(Node<T> *node);
-    void PreOrder(Node<T> *node);
 public:
-    //BTree(T key){ root = new Node<T>(key);}
-    //BTree();
-    //~Btree();
-    void Add(T key);
     void CreateST(int size, int arr[]);
-    Node<T>* Find(T key);
-
-    void DeleteTree();
-
+    void UpdateTree(int arr[], int a);
     int FindRMQ(int l, int r);
+    void PRT(int l, int r);
 
-    void PostOrder();
-    void InOrder();
-    void PreOrder();
 };
-
-template <class T>
-void BTree<T>::Add(Node<T> *node, T key)
-{
-    if(key > node->key)
-    {
-        if(node->right == nullptr)
-            node->right = new Node<T>(key);
-        else
-            Add(node->right, key);
-    }
-    else
-    {
-        if(node->left == nullptr)
-            node->left = new Node<T>(key);
-        else
-            Add(node->left, key);
-    }
-}
-
-template <class T>
-void BTree<T>::Add(T key)
-{
-    if(root == nullptr)
-        root = new Node<T>(key);
-    else    
-        Add(root, key);
-}
 
 template<class T>
 void BTree<T>::CreateST(Node<Data> *node, int l, int r, int arr[])
@@ -140,7 +98,9 @@ void BTree<T>::CreateST(Node<Data> *node, int l, int r, int arr[])
     
     int m = (l+r)/2;
     node->left = new Node<Data>( Data( l, m, GetRMQ(arr, l, m) ) );
+    cout << "Left is: " << node->left->key << endl;
     node->right = new Node<Data>( Data( m+1, r, GetRMQ(arr, m+1, r) ) );
+    cout << "Right is: " << node->right->key << endl;
     CreateST(node->left, l, m, arr);
     CreateST(node->right, m+1, r, arr);
 }
@@ -149,99 +109,27 @@ template <class T>
 void BTree<T>::CreateST(int size, int arr[])
 {
     root = new Node<Data> ( Data (0, size-1, GetRMQ(arr, 0, size-1) ) );
+    cout << "Root is: " << root->key << endl;
     CreateST(root, 0, size-1, arr);
-}
-
-template <class T>
-Node<T>* BTree<T>::Find(Node<T> *node, T key)
-{
-    if(node->key == key)
-        return node;
-
-    if(key > node->key)
-    {
-        if(node->right != nullptr)
-            Find(node->right, key);
-        else
-            return nullptr;
-    }
-    else
-    {
-        if(node->left != nullptr)
-            Find(node->left, key);
-        else
-            return nullptr;
-    }
-}
-
-template <class T>
-Node<T>* BTree<T>::Find(T key)
-{
-    Find(root, key);
-}
-
-template <class T>
-void BTree<T>::PreOrder(Node<T> *node)
-{
-    if(node == nullptr)
-        return;
-
-    cout << node->key << endl;
-    PreOrder(node->left);
-    PreOrder(node->right);
-}
-
-template <class T>
-void BTree<T>::PreOrder()
-{
-    PreOrder(root);
-}
-
-template <class T>
-void BTree<T>::InOrder(Node<T> *node)
-{
-    if(node == nullptr)
-        return;
-
-    InOrder(node->left);
-    cout << node->key << endl;
-    InOrder(node->right);
-}
-
-template <class T>
-void BTree<T>::InOrder()
-{
-    InOrder(root);
-}
-
-template <class T>
-void BTree<T>::PostOrder(Node<T> *node)
-{
-    if(node == nullptr)
-        return;
-
-    PostOrder(node->left);
-    PostOrder(node->right);
-    cout << node->key << endl;
-}
-
-template <class T>
-void BTree<T>::PostOrder()
-{
-    PostOrder(root);
 }
 
 template<class T>
 int BTree<T>::FindRMQ(Node<Data> *data, int l, int r)
 {
+    if( data == nullptr ) 
+        return -1;
+
     if( l > r || l > data->key.r || r < data->key.l)
     {
         //cout << "+infinity" << endl;
-        return std::numeric_limits<int>::max();
+        return 99999;
     }
+    
     if(l == data->key.l && r == data->key.r)
         return data->key.RMQ;
 
+    cout << "left is: " << data->left->key << endl;
+    cout << "Right is: " << data->right->key << endl;
     return min( FindRMQ( data->left, max(l, data->key.l), min(r, data->key.M) ), FindRMQ( data->right, max(l, data->key.M+1), min(r, data->key.r) ) );
 }
 
@@ -252,21 +140,49 @@ int BTree<T>::FindRMQ(int l, int r)
 }
 
 template<class T>
-void BTree<T>::DeleteTree(Node<T> *node)
+void BTree<T>::UpdateTree(Node<Data> *node, int a, int arr[])
 {
     if(node == nullptr)
         return;
+
+    if(!(a >= node->key.l && a <= node->key.r))
+        return;
     
-    DeleteTree(node->left);
-    DeleteTree(node->right);
-    node == nullptr;
-    delete node;
+    node->key.RMQ = GetRMQ(arr, node->key.l, node->key.r);
+    UpdateTree(node->left, a, arr);
+    UpdateTree(node->right, a, arr);
 }
 
 template<class T>
-void BTree<T>::DeleteTree()
+void BTree<T>::UpdateTree(int arr[], int a)
 {
-    DeleteTree(root);
+    UpdateTree(root, a, arr);
+}
+
+template<class T>
+void BTree<T>::PRT(Node<Data> *node, int a, int b)
+{
+    /*if(( l > r || l > node->key.r || r < node->key.l))
+        return;
+
+    if(l == node->key.l && r == node->key.r)
+    {
+        cout << node->key << endl;
+        return;
+    }*/
+    if( node == nullptr)
+        return;
+
+    PRT( node->left, max(a, node->key.l), min(b, node->key.M) );
+    PRT( node->right, max(a, node->key.M+1), min(b, node->key.r) );
+    if(!(b < node->key.l || a > node->key.r))
+        cout << node->key.RMQ << " ";
+}
+
+template<class T>
+void BTree<T>::PRT(int l, int r)
+{
+    PRT(root, l, r);
 }
 
 int main()
@@ -292,7 +208,6 @@ int main()
     do
     {
         cin >> tst;
-
         if(tst == "END")
             break;
 
@@ -302,19 +217,23 @@ int main()
             int b;
             cin >> a;
             cin >> b;
-
             cout << tree->FindRMQ(a,b) << endl;
         }
         else if(tst == "UPD")
         {
-            int a;
-            int b;
+            int a, b;
             cin >> a;
             cin >> b;
             arr[a] = b;
-            tree->DeleteTree();
-            tree->CreateST(N, arr);
+            tree->UpdateTree(arr, a);
         }
-
+        else if(tst == "PRT")
+        {
+            int a, b;
+            cin >> a;
+            cin >> b;
+            tree->PRT(a,b);
+            cout << endl;
+        }
     }while(tst != "END");
 }
