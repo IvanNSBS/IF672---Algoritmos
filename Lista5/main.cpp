@@ -1,8 +1,80 @@
 #include <iostream>
 
+// A union by rank and path compression based program to detect cycle in a graph 
+#include <stdio.h> 
+#include <stdlib.h> 
+  
+// a structure to represent an edge in the graph 
+struct Edge 
+{ 
+    int src, dest; 
+}; 
+  
+// a structure to represent a graph 
+struct Graph 
+{ 
+    // V-> Number of vertices, E-> Number of edges 
+    int V, E; 
+  
+    // graph is represented as an array of edges 
+    struct Edge* edge; 
+}; 
+  
+struct subset 
+{ 
+    int parent; 
+    int rank; 
+}; 
+  
+// Creates a graph with V vertices and E edges 
+struct Graph* createGraph(int V, int E) 
+{ 
+    struct Graph* graph = (struct Graph*) malloc( sizeof(struct Graph) ); 
+    graph->V = V; 
+    graph->E = E; 
+  
+    graph->edge = (struct Edge*) malloc( graph->E * sizeof( struct Edge ) ); 
+  
+    return graph; 
+} 
+  
+// A utility function to find set of an element i 
+// (uses path compression technique) 
+int find(struct subset subsets[], int i) 
+{ 
+    // find root and make root as parent of i (path compression) 
+    if (subsets[i].parent != i) 
+        subsets[i].parent = find(subsets, subsets[i].parent); 
+  
+    return subsets[i].parent; 
+} 
+  
+// A function that does union of two sets of x and y 
+// (uses union by rank) 
+void Union(struct subset subsets[], int x, int y) 
+{ 
+    int xroot = find(subsets, x); 
+    int yroot = find(subsets, y); 
+  
+    // Attach smaller rank tree under root of high rank tree 
+    // (Union by Rank) 
+    if (subsets[xroot].rank < subsets[yroot].rank) 
+        subsets[xroot].parent = yroot; 
+    else if (subsets[xroot].rank > subsets[yroot].rank) 
+        subsets[yroot].parent = xroot; 
+  
+    // If ranks are same, then make one as root and increment 
+    // its rank by one 
+    else
+    { 
+        subsets[yroot].parent = xroot; 
+        subsets[xroot].rank++; 
+    } 
+} 
+
 struct RoomCon
 {
-    int r_a, r_b;
+    int r_a, r_b;//src, dest
     RoomCon(){}
     RoomCon(const int &a, const int &b): r_a(a), r_b(b){}
 
@@ -44,85 +116,3 @@ int main()
     }
     return 0;
 }
-/*
-  ______________________________
-  |     |     |     |     |     |
-  |  0  |  1  |  2  |  3  |  4  |
-  |     |     |     |     |     |
-  |-----+-----+-----+-----+-----|
-  |     |     |     |     |     |
-  |  5  |  6  |  7  |  8  |  9  |
-  |     |     |     |     |     |
-  |-----+-----+-----+-----+-----|
-  |     |     |     |     |     |
-  |  10 |  11 |  12 |  13 |  14 |
-  |     |     |     |     |     |
-  |-----+-----+-----+-----+-----|
-  |     |     |     |     |     |
-  |  15 |  16 |  17 |  18 |  19 |
-  |     |     |     |     |     |
-  |-----+-----+-----+-----+-----|
-  |     |     |     |     |     |
-  |  20 |  21 |  22 |  23 |  24 |
-  |     |     |     |     |     |
-  -------------------------------
-
-  ______________________________
-  |     |     |     |     |     |
-  |     0     1     2     3     |
-  |     |     |     |     |     |
-  |--4--+--5--+--6--+--7--+--8--|
-  |     |     |     |     |     |
-  |     9     10    11    12    |
-  |     |     |     |     |     |
-  |--13-+--14-+--15-+--16-+--17-|
-  |     |     |     |     |     |
-  |     18    19    20    21    |
-  |     |     |     |     |     |
-  |--22-+--23-+--24-+--25-+--26-|
-  |     |     |     |     |     |
-  |    27    28    29     30    |
-  |     |     |     |     |     |
-  |--31-+--32-+--33-+--34-+--35-|
-  |     |     |     |     |     |
-  |    36    37    38    39     |
-  |     |     |     |     |     |
-  -------------------------------
-    _________________________
-  |     |     |     |     |
-  |  0  |  1  |  2  |  3  |
-  |     |     |     |     |
-  |-----+-----+-----+-----|
-  |     |     |     |     |
-  |  4  |  5  |  6  |   7 |
-  |     |     |     |     |
-  |-----+-----+-----+-----|
-  |     |     |     |     |
-  |  8  |  9  |  10 |  11 |
-  |     |     |     |     |
-  |-----+-----+-----+-----|
-  |     |     |     |     |
-  |  12 |  13 |  14 | 15  |
-  |     |     |     |     |
-  |     |     |     |     |
-  ------------------------
-
-  _________________________
-  |     |     |     |     |
-  |     0     1     2     |
-  |     |     |     |     |
-  |--3--+--4--+--5--+--6--|
-  |     |     |     |     |
-  |     7     8     9     |
-  |     |     |     |     |
-  |-10--+-11--+-12--+-13--|
-  |     |     |     |     |
-  |    14     15    16    |
-  |     |     |     |     |
-  |-17--+-18--+-19--+-20--|
-  |     |     |     |     |
-  |    21    22    23     |
-  |     |     |     |     |
-  ------------------------
-
-*/
