@@ -45,6 +45,7 @@ class Graph
                 arr[i].rank = 0;    
             }
         }
+
         //set the values of src and dest
         void init_rooms()
         {
@@ -61,7 +62,7 @@ class Graph
                 else
                     rset[i] = roomCon(i - (V-1) - ((V-1)*c), i - ((V-1)*c) + 1);
 
-                std::cout << rset[i] << std::endl;
+                //std::cout << rset[i] << std::endl;
 
                 if(!sw && counter == V-1){
                     sw = true;
@@ -74,32 +75,25 @@ class Graph
                 }
             }
         }
-        // A utility function to find set of an element i 
-        // (uses path compression technique) 
+
         int find(int i) 
         { 
-            // find root and make root as parent of i (path compression) 
             if (arr[i].parent != i) 
                 arr[i].parent = find(arr[i].parent); 
         
             return arr[i].parent; 
         } 
-        // A function that does union of two sets of x and y 
-        // (uses union by rank) 
+
         void Union(int x, int y) 
         { 
             int xroot = find(x); 
             int yroot = find(y); 
         
-            // Attach smaller rank tree under root of high rank tree 
-            // (union by Rank) 
             if (arr[xroot].rank < arr[yroot].rank) 
                 arr[xroot].parent = yroot; 
             else if (arr[xroot].rank > arr[yroot].rank) 
                 arr[yroot].parent = xroot; 
         
-            // If ranks are same, then make one as root and increment 
-            // its rank by one 
             else
             { 
                 arr[yroot].parent = xroot; 
@@ -107,50 +101,32 @@ class Graph
             } 
         }
 
-        void create_link(){
+        void remove_wall(int wall){
+            int x = find(edges[wall].src); 
+            int y = find(edges[wall].dest); 
+    
+            Union(x, y); 
+        }
 
+        int are_rooms_connected(int r_a, int r_b){
+            int par_a = find(r_a);
+            int par_b = find(r_b);   
+            if(par_a == par_b)
+                return 1;
+            else
+                return 0;
         }
 }; 
   
-  
-  
-
-// The main function to check whether a given graph contains cycle or not 
-/*int isConnected( struct Graph* graph ) 
-{ 
-    int V = graph->V; 
-    int E = graph->E; 
-  
-    // Allocate memory for creating V sets 
-    struct subset *arr = 
-        (struct subset*) malloc( V * sizeof(struct subset) ); 
-  
-    for (int v = 0; v < V; ++v) 
-    { 
-        arr[v].parent = v; 
-        arr[v].rank = 0; 
-    } 
-  
-    // Iterate through all edges of graph, find sets of both 
-    // vertices of every edge, if sets are same, then there is 
-    // cycle in graph. 
-    for(int e = 0; e < E; ++e) 
-    { 
-        int x = find(arr, graph->edge[e].src); 
-        int y = find(arr, graph->edge[e].dest); 
-  
-        if (x == y) 
-            return 1; 
-  
-        union(arr, x, y); 
-    } 
-    return 0; 
-} */
-
 int main()
 {
-    Graph *a = new Graph(3);
-    //a->init_rooms();
+    //Graph *a = new Graph(3);
+    int K; //numero de casos
+    std::cin >> K; 
 
+    int N; // maze size
+    int M; //qntidade de paredes removidas
+    int Q; //qntidade de paredes pra consultar
+    std::cin >> N >> M >> Q;
     return 0;
 }
