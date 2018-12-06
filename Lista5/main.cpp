@@ -39,8 +39,8 @@ class Graph
         { 
             edges = new roomCon[2*(Vv*Vv - Vv)]; 
             init_rooms();
-            arr = new subset[Vv];
-            for(int i = 0; i < Vv; i++){
+            arr = new subset[Vv*Vv];
+            for(int i = 0; i < Vv*Vv; i++){
                 arr[i].parent = i;
                 arr[i].rank = 0;    
             }
@@ -52,17 +52,16 @@ class Graph
             bool sw = false;
             int counter = 0;
             int c = 0;
-            roomCon *rset = new roomCon[2*(V*V - V)];
             for(int i = 0; i < 2*(V*V - V); i++){
                 //std::cout << i << " ";
                 counter++;
                 
                 if(!sw)
-                    rset[i] = roomCon(i - ((V-1)*c), i - ((V-1)*c) + 1);
+                    edges[i] = roomCon(i - ((V-1)*c), i - ((V-1)*c) + 1);
                 else
-                    rset[i] = roomCon(i - (V-1) - ((V-1)*c), i - ((V-1)*c) + 1);
+                    edges[i] = roomCon(i - (V-1) - ((V-1)*c), i - ((V-1)*c) + 1);
 
-                //std::cout << rset[i] << std::endl;
+                //std::cout << edges[i] << std::endl;
 
                 if(!sw && counter == V-1){
                     sw = true;
@@ -102,6 +101,12 @@ class Graph
         }
 
         void remove_wall(int wall){
+            //std::cout << "in wall\n";
+            //for(int i = 0; i < V; i++)
+            //    std::cout << "at arr: " << arr[i].parent << std::endl;
+
+            //std::cout << "Rooms of wall -> "<< edges[wall] << std::endl;
+            //std::cout << "at arr: " << arr[edges[wall].src].parent << " " << arr[edges[wall].dest].parent << std::endl;
             int x = find(edges[wall].src); 
             int y = find(edges[wall].dest); 
     
@@ -123,10 +128,30 @@ int main()
     //Graph *a = new Graph(3);
     int K; //numero de casos
     std::cin >> K; 
+    for(int i = 0; i < K; ++i)
+    {
+        int N; // maze size
+        int M; //qntidade de paredes removidas
+        int Q; //qntidade de paredes pra consultar
+        std::cin >> N >> M >> Q;
 
-    int N; // maze size
-    int M; //qntidade de paredes removidas
-    int Q; //qntidade de paredes pra consultar
-    std::cin >> N >> M >> Q;
+        Graph *a = new Graph(N);
+        for(int j = 0; j < M; ++j)
+        {
+            int index;
+            std::cin >> index;
+            a->remove_wall(index);
+        }
+
+        for(int j = 0; j < Q; ++j)
+        {
+            int r_a;
+            int r_b;
+            std::cin >> r_a >> r_b;
+            int result = a->are_rooms_connected(r_a, r_b);
+            printf("%d.%d %d\n", i, j, result);
+        }
+        printf("\n");
+    }
     return 0;
 }
