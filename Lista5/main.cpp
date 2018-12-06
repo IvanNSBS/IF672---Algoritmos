@@ -1,118 +1,156 @@
 #include <iostream>
-
-// A union by rank and path compression based program to detect cycle in a graph 
+#include <vector>
 #include <stdio.h> 
 #include <stdlib.h> 
-  
-// a structure to represent an edge in the graph 
-struct Edge 
-{ 
-    int src, dest; 
-}; 
-  
-// a structure to represent a graph 
-struct Graph 
-{ 
-    // V-> Number of vertices, E-> Number of edges 
-    int V, E; 
-  
-    // graph is represented as an array of edges 
-    struct Edge* edge; 
-}; 
-  
+
+//Edge
+struct roomCon
+{
+    int src, dest;//src, dest
+    roomCon(){}
+    roomCon(const int &a, const int &b): src(a), dest(b){}
+
+    friend std::ostream& operator<<(std::ostream& os, const roomCon& pp)  
+    {  
+        //os << "room a: " << pp.src << " " << "room b: " << pp.dest;  
+        os << pp.src << " " << pp.dest;  
+        return os;  
+    } 
+};
+
 struct subset 
 { 
     int parent; 
     int rank; 
 }; 
-  
-// Creates a graph with V vertices and E edges 
-struct Graph* createGraph(int V, int E) 
+
+class Graph 
 { 
-    struct Graph* graph = (struct Graph*) malloc( sizeof(struct Graph) ); 
-    graph->V = V; 
-    graph->E = E; 
+    public:
+        // V-> Number of vertices, E-> Number of edges 
+        int V, E; 
+
+        // graph is represented as an array of edges 
+        roomCon* edges;
+        subset *arr; 
+
+        Graph():V(0), E(0){}
+        Graph(const int &Vv):V(Vv), E(2*(Vv*Vv - Vv))
+        { 
+            edges = new roomCon[2*(Vv*Vv - Vv)]; 
+            init_rooms();
+            arr = new subset[Vv];
+            for(int i = 0; i < Vv; i++){
+                arr[i].parent = i;
+                arr[i].rank = 0;    
+            }
+        }
+        //set the values of src and dest
+        void init_rooms()
+        {
+            bool sw = false;
+            int counter = 0;
+            int c = 0;
+            roomCon *rset = new roomCon[2*(V*V - V)];
+            for(int i = 0; i < 2*(V*V - V); i++){
+                //std::cout << i << " ";
+                counter++;
+                
+                if(!sw)
+                    rset[i] = roomCon(i - ((V-1)*c), i - ((V-1)*c) + 1);
+                else
+                    rset[i] = roomCon(i - (V-1) - ((V-1)*c), i - ((V-1)*c) + 1);
+
+                std::cout << rset[i] << std::endl;
+
+                if(!sw && counter == V-1){
+                    sw = true;
+                    counter = 0;
+                }
+                else if(sw && counter == V){
+                    sw = false;
+                    counter = 0;
+                    c++;
+                }
+            }
+        }
+        // A utility function to find set of an element i 
+        // (uses path compression technique) 
+        int find(int i) 
+        { 
+            // find root and make root as parent of i (path compression) 
+            if (arr[i].parent != i) 
+                arr[i].parent = find(arr[i].parent); 
+        
+            return arr[i].parent; 
+        } 
+        // A function that does union of two sets of x and y 
+        // (uses union by rank) 
+        void Union(int x, int y) 
+        { 
+            int xroot = find(x); 
+            int yroot = find(y); 
+        
+            // Attach smaller rank tree under root of high rank tree 
+            // (union by Rank) 
+            if (arr[xroot].rank < arr[yroot].rank) 
+                arr[xroot].parent = yroot; 
+            else if (arr[xroot].rank > arr[yroot].rank) 
+                arr[yroot].parent = xroot; 
+        
+            // If ranks are same, then make one as root and increment 
+            // its rank by one 
+            else
+            { 
+                arr[yroot].parent = xroot; 
+                arr[xroot].rank++; 
+            } 
+        }
+
+        void create_link(){
+
+        }
+}; 
   
-    graph->edge = (struct Edge*) malloc( graph->E * sizeof( struct Edge ) ); 
   
-    return graph; 
-} 
   
-// A utility function to find set of an element i 
-// (uses path compression technique) 
-int find(struct subset subsets[], int i) 
+
+// The main function to check whether a given graph contains cycle or not 
+/*int isConnected( struct Graph* graph ) 
 { 
-    // find root and make root as parent of i (path compression) 
-    if (subsets[i].parent != i) 
-        subsets[i].parent = find(subsets, subsets[i].parent); 
+    int V = graph->V; 
+    int E = graph->E; 
   
-    return subsets[i].parent; 
-} 
+    // Allocate memory for creating V sets 
+    struct subset *arr = 
+        (struct subset*) malloc( V * sizeof(struct subset) ); 
   
-// A function that does union of two sets of x and y 
-// (uses union by rank) 
-void Union(struct subset subsets[], int x, int y) 
-{ 
-    int xroot = find(subsets, x); 
-    int yroot = find(subsets, y); 
-  
-    // Attach smaller rank tree under root of high rank tree 
-    // (Union by Rank) 
-    if (subsets[xroot].rank < subsets[yroot].rank) 
-        subsets[xroot].parent = yroot; 
-    else if (subsets[xroot].rank > subsets[yroot].rank) 
-        subsets[yroot].parent = xroot; 
-  
-    // If ranks are same, then make one as root and increment 
-    // its rank by one 
-    else
+    for (int v = 0; v < V; ++v) 
     { 
-        subsets[yroot].parent = xroot; 
-        subsets[xroot].rank++; 
+        arr[v].parent = v; 
+        arr[v].rank = 0; 
     } 
-} 
-
-struct RoomCon
-{
-    int r_a, r_b;//src, dest
-    RoomCon(){}
-    RoomCon(const int &a, const int &b): r_a(a), r_b(b){}
-
-    friend std::ostream& operator<<(std::ostream& os, const RoomCon& pp)  
-    {  
-        //os << "room a: " << pp.r_a << " " << "room b: " << pp.r_b;  
-        os << pp.r_a << " " << pp.r_b;  
-        return os;  
+  
+    // Iterate through all edges of graph, find sets of both 
+    // vertices of every edge, if sets are same, then there is 
+    // cycle in graph. 
+    for(int e = 0; e < E; ++e) 
+    { 
+        int x = find(arr, graph->edge[e].src); 
+        int y = find(arr, graph->edge[e].dest); 
+  
+        if (x == y) 
+            return 1; 
+  
+        union(arr, x, y); 
     } 
-};
+    return 0; 
+} */
 
 int main()
 {
-    int n = 5;
-    bool sw = false;
-    int counter = 0;
-    int c = 0;
-    RoomCon *rset = new RoomCon[2*(n*n - n)];
-    for(int i = 0; i < 2*(n*n - n); i++){
-        //std::cout << i << " ";
-        counter++;
-        
-        if(!sw)
-            rset[i] = RoomCon(i - ((n-1)*c), i - ((n-1)*c) + 1);
-        else
-            rset[i] = RoomCon(i - (n-1) - ((n-1)*c), i - ((n-1)*c) + 1);
+    Graph *a = new Graph(3);
+    //a->init_rooms();
 
-        std::cout << rset[i] << std::endl;
-
-        if(!sw && counter == n-1){
-            sw = true;
-            counter = 0;
-        }
-        else if(sw && counter == n){
-            sw = false;
-            counter = 0;
-            c++;
-        }
-    }
     return 0;
 }
