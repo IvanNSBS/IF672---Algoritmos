@@ -1,38 +1,38 @@
 #include <stdio.h> 
 #include <limits.h> 
 #include <iostream>
-#include <sstream>
-#include <string>
 #include <limits>
   
 struct Graph
 {
 public:
     int num_vertices;
-    float **adj_list;
-    //int **path_list;
+    double **adj_list;
 public:
     Graph(){}
     Graph(const int &v) : num_vertices(v)
     { 
-        adj_list = new float*[v];
-        for(int i = 0; i < v; i++)
-            adj_list[i] = new float[v];
-
+        adj_list = new double*[v];
+        for(int i = 0; i < v; i++){
+            adj_list[i] = new double[v];
+        }
 
         for(int i = 0; i < v; i++)
             for(int j = 0; j < v; j++)
-                adj_list[i][j] = 0;
+                adj_list[i][j] = 9999999999;
     }
 
-    void add_edge(int src, int dest, float weight){
-        adj_list[src][dest] = weight;
-        adj_list[dest][src] = weight;
+    void add_edge(int src, int dest, double weight){
+        if(weight <= adj_list[src][dest])
+        {
+            adj_list[src][dest] = weight;
+            adj_list[dest][src] = weight;
+        }
     }
     
-    int min_distance(float dist[], bool visited[]) 
+    int min_distance(double dist[], bool visited[]) 
     { 
-        float min = (std::numeric_limits<float>::max()), min_index; 
+        double min = (std::numeric_limits<double>::max()), min_index; 
     
         for (int v = 0; v < num_vertices; v++) 
             if (visited[v] == false && dist[v] <= min) 
@@ -43,56 +43,61 @@ public:
 
     void print_path(int parent[], int j) 
     { 
-        if (parent[j] == - 1) {
+        if (parent[j] == -1) 
             return; 
-        }
-        printf("%d ", j);
+        
         print_path(parent, parent[j]);
+        printf("%d ", j);
     } 
+
+    void print_answer(int parent[], int src, int dest)
+    {
+        printf("%d ", src);
+        print_path(parent, parent[dest]);
+        printf("%d", dest);
+        printf("\n");
+    }
     
     void dijkstra(int src, int dest) 
     { 
 
-        float *dist = new float [num_vertices];  
+        double *dist = new double [num_vertices];  
         bool *visited = new bool [num_vertices];
         int *parent = new int[num_vertices]; 
     
         for (int i = 0; i < num_vertices; i++) 
         { 
             parent[i] = -1; 
-            dist[i] = std::numeric_limits<float>::max(); 
+            dist[i] = std::numeric_limits<double>::max(); 
             visited[i] = false; 
         } 
 
         dist[src] = 0;  
-        for (int count = 0; count < num_vertices - 1; count++) 
+        for (int count = 0; count < num_vertices - 1 ; count++) 
         {  
             int u = min_distance(dist, visited); 
             visited[u] = true; 
             for (int v = 0; v < num_vertices; v++) 
-                if (!visited[v] && adj_list[u][v] && 
-                    dist[u] + adj_list[u][v] < dist[v]) 
+                if (!visited[v] && adj_list[u][v] && dist[u] + adj_list[u][v] < dist[v]) 
                 { 
-                    parent[v] = u; 
+                    parent[v] = u;
                     dist[v] = dist[u] + adj_list[u][v]; 
                 }  
         }
-        printf("%d ", src);
-        print_path(parent, parent[dest]);
-        printf("%d", dest);
-        printf("\n"); 
+
+        print_answer(parent, src, dest);
     } 
 };
 
-float get_weight(float &P, float &B, float &C)
+double get_weight(double &P, double &B, double &C)
 {
-    float W = (P*B + (1-P)*C) / (B+C);
+    double W = ( (P*B) + ((1-P)*C) ) / (B+C);
     return W;
 }
 
 int main() 
 { 
-    float P;
+    double P;
     std::cin >> P;
 
     int N, M;
@@ -103,43 +108,17 @@ int main()
     for(int i = 0; i < M; ++i)
     {
         int X, Y;
-        float B, C;
-        std::cin >> X >> Y >> B >> C;
+        double B, C;
+        std::cin >> X >> Y;
+        std::cin >> B >> C;
         a->add_edge(X,Y, get_weight(P,B,C));
     }
     
     int S, T;
-    /*std::cin >> S >> T; 
-    a->dijkstra(S, T);*/
 
     while ( std::cin >> S >> T )
-   {
-      a->dijkstra(S, T);
-   }
+    {        
+        a->dijkstra(S, T);
+    }
     return 0; 
 } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
