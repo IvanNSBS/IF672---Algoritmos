@@ -1,12 +1,15 @@
 #include <stdio.h> 
 #include <limits.h> 
+#include <iostream>
+#include <sstream>
+#include <string>
   
 struct Graph
 {
 public:
     int num_vertices;
-    int **adj_list;// = new int[num_vertices][num_vertices];
-    int **path_list;
+    int **adj_list;
+    //int **path_list;
 public:
     Graph(){}
     Graph(const int &v) : num_vertices(v)
@@ -80,28 +83,37 @@ public:
     } 
 };
 
+float get_weight(float &P, float &B, float &C)
+{
+    float W = (P*B + (1-P)*C) / (B+C);
+    return W;
+}
 
-// Driver Code 
 int main() 
 { 
-    //  Let us create the example 
-    // graph discussed above 
-    int graph[9][9] = {{0, 4, 0, 0, 0, 0, 0, 8, 0}, 
-                       {4, 0, 8, 0, 0, 0, 0, 11, 0}, 
-                       {0, 8, 0, 7, 0, 4, 0, 0, 2}, 
-                       {0, 0, 7, 0, 9, 14, 0, 0, 0}, 
-                       {0, 0, 0, 9, 0, 10, 0, 0, 0}, 
-                       {0, 0, 4, 0, 10, 0, 2, 0, 0}, 
-                       {0, 0, 0, 14, 0, 2, 0, 1, 6}, 
-                       {8, 11, 0, 0, 0, 0, 1, 0, 7}, 
-                       {0, 0, 2, 0, 0, 0, 6, 7, 0}}; 
-  
-    Graph *a = new Graph(9);
-    for(int i = 0; i < 9; ++i)
-        for(int j = 0; j < 9; ++j)
-            a->add_edge(i,j, graph[i][j]);
+    float P;
+    std::cin >> P;
 
-    a->dijkstra(0, 9); 
+    int N, M;
+    std::cin >> N >> M;
+
+    Graph *a = new Graph(N);
+
+    for(int i = 0; i < M; ++i)
+    {
+        int X, Y, B, C;
+        std::cin >> X >> Y >> B >> C;
+        a->add_edge(X,Y, get_weight(P,B,C));
+    }
+
+    std::string line;
+	std::getline(std::cin,line);
+	std::stringstream stream(line);
+    int S, T;
+	while (!stream.eof()){
+		stream >> S >> T;
+        a->dijkstra(S, T);
+	}
     return 0; 
 } 
 
