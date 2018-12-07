@@ -3,20 +3,21 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <limits>
   
 struct Graph
 {
 public:
     int num_vertices;
-    int **adj_list;
+    float **adj_list;
     //int **path_list;
 public:
     Graph(){}
     Graph(const int &v) : num_vertices(v)
     { 
-        adj_list = new int*[v];
+        adj_list = new float*[v];
         for(int i = 0; i < v; i++)
-            adj_list[i] = new int[v];
+            adj_list[i] = new float[v];
 
 
         for(int i = 0; i < v; i++)
@@ -24,15 +25,14 @@ public:
                 adj_list[i][j] = 0;
     }
 
-    void add_edge(int src, int dest, int weight){
+    void add_edge(int src, int dest, float weight){
         adj_list[src][dest] = weight;
         adj_list[dest][src] = weight;
     }
     
-    int min_distance(int dist[], bool visited[]) 
+    int min_distance(float dist[], bool visited[]) 
     { 
-        // Initialize min value 
-        int min = INT_MAX, min_index; 
+        float min = (std::numeric_limits<float>::max()), min_index; 
     
         for (int v = 0; v < num_vertices; v++) 
             if (visited[v] == false && dist[v] <= min) 
@@ -43,24 +43,24 @@ public:
 
     void print_path(int parent[], int j) 
     { 
-        if (parent[j] == - 1) 
+        if (parent[j] == - 1) {
             return; 
-    
-        print_path(parent, parent[j]); 
-    
-        printf("%d ", j); 
+        }
+        printf("%d ", j);
+        print_path(parent, parent[j]);
     } 
     
     void dijkstra(int src, int dest) 
     { 
-        int dist[num_vertices];  
-        bool visited[num_vertices];
-        int parent[num_vertices]; 
+
+        float *dist = new float [num_vertices];  
+        bool *visited = new bool [num_vertices];
+        int *parent = new int[num_vertices]; 
     
         for (int i = 0; i < num_vertices; i++) 
         { 
-            parent[0] = -1; 
-            dist[i] = INT_MAX; 
+            parent[i] = -1; 
+            dist[i] = std::numeric_limits<float>::max(); 
             visited[i] = false; 
         } 
 
@@ -78,7 +78,8 @@ public:
                 }  
         }
         printf("%d ", src);
-        print_path(parent, dest);
+        print_path(parent, parent[dest]);
+        printf("%d", dest);
         printf("\n"); 
     } 
 };
@@ -101,19 +102,20 @@ int main()
 
     for(int i = 0; i < M; ++i)
     {
-        int X, Y, B, C;
+        int X, Y;
+        float B, C;
         std::cin >> X >> Y >> B >> C;
         a->add_edge(X,Y, get_weight(P,B,C));
     }
-
-    std::string line;
-	std::getline(std::cin,line);
-	std::stringstream stream(line);
+    
     int S, T;
-	while (!stream.eof()){
-		stream >> S >> T;
-        a->dijkstra(S, T);
-	}
+    /*std::cin >> S >> T; 
+    a->dijkstra(S, T);*/
+
+    while ( std::cin >> S >> T )
+   {
+      a->dijkstra(S, T);
+   }
     return 0; 
 } 
 
@@ -141,20 +143,3 @@ int main()
 
 
 
-
-
-
-
-
-// int printSolution(int dist[], int n, int parent[]) 
-// { 
-//     int src = 0; 
-//     printf("Vertex\t Distance\tPath"); 
-//     for (int i = 1; i < V; i++) 
-//     { 
-//         printf("\n%d -> %d \t\t %d\t\t%d ", 
-//                       src, i, dist[i], src); 
-//         print_path(parent, i); 
-//     }
-//     printf("\n"); 
-// } 
